@@ -84,8 +84,14 @@ function isStoreFile(id: string, scriptContent: string): boolean {
 
 function resolveImportPath(fromFile: string, importPath: string, rootDir: string): string | null {
   try {
-    const dir = path.dirname(fromFile)
-    const resolved = path.resolve(dir, importPath)
+    let resolved: string
+    if (importPath.startsWith('@/')) {
+      resolved = path.resolve(rootDir, 'src', importPath.slice(2))
+    } else if (importPath.startsWith('~/')) {
+      resolved = path.resolve(rootDir, 'src', importPath.slice(2))
+    } else {
+      resolved = path.resolve(path.dirname(fromFile), importPath)
+    }
     return path.relative(rootDir, resolved).replace(/\\/g, '/')
   } catch {
     return null
