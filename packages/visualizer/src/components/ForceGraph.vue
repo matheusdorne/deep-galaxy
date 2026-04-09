@@ -22,6 +22,18 @@ const NODE_COLORS: Record<string, string> = {
   endpoint:  '#44ffaa',
 }
 
+const LINK_COLORS: Record<string, string> = {
+  static_import:     '#5a7aaa',
+  state_consumption: '#8a5aaa',
+  wormhole:          '#44ffaa',
+}
+
+const LINK_DASH: Record<string, string> = {
+  static_import:     '0',
+  state_consumption: '5,3',
+  wormhole:          '2,4',
+}
+
 let simulation: d3.Simulation<SimNode, SimLink> | null = null
 let nodeEl:  d3.Selection<SVGCircleElement, SimNode, SVGGElement, unknown> | null = null
 let linkEl:  d3.Selection<SVGLineElement,   SimLink,  SVGGElement, unknown> | null = null
@@ -82,8 +94,9 @@ onMounted(() => {
     .selectAll<SVGLineElement, SimLink>('line')
     .data(simLinks)
     .join('line')
-    .attr('stroke', '#2a2a4a')
+    .attr('stroke', d => LINK_COLORS[d.type] ?? '#3a3a6a')
     .attr('stroke-width', 1.5)
+    .attr('stroke-dasharray', d => LINK_DASH[d.type] ?? '0')
 
   nodeEl = zoomContainer.append('g')
     .attr('class', 'nodes')
@@ -142,7 +155,7 @@ watch(selectedNodeId, (id) => {
 
   if (!id) {
     nodeEl.attr('opacity', 1)
-    linkEl.attr('opacity', 1).attr('stroke', '#2a2a4a')
+    linkEl.attr('opacity', 1).attr('stroke', d => LINK_COLORS[d.type] ?? '#3a3a6a')
     labelEl.attr('opacity', 1)
     return
   }
@@ -166,7 +179,7 @@ watch(selectedNodeId, (id) => {
     .attr('stroke', l => {
       const src = (l.source as SimNode).id
       const tgt = (l.target as SimNode).id
-      return src === id || tgt === id ? '#4a9eff' : '#2a2a4a'
+      return src === id || tgt === id ? (LINK_COLORS[l.type] ?? '#3a3a6a') : '#2a2a4a'
     })
 })
 

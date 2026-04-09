@@ -7,9 +7,9 @@ const nodeTypes = [
 ]
 
 const linkTypes = [
-  { type: 'static_import',    color: '#2a2a4a', label: 'Static import'    },
-  { type: 'state_consumption', color: '#2a2a4a', label: 'State consumption' },
-  { type: 'wormhole',         color: '#2a2a4a', label: 'Wormhole'         },
+  { type: 'static_import',     color: '#5a7aaa', dash: '0',   label: 'Static import'     },
+  { type: 'state_consumption', color: '#8a5aaa', dash: '5,3', label: 'State consumption' },
+  { type: 'wormhole',          color: '#44ffaa', dash: '2,4', label: 'Wormhole'          },
 ]
 </script>
 
@@ -29,7 +29,14 @@ const linkTypes = [
       <h3>Links</h3>
       <ul>
         <li v-for="item in linkTypes" :key="item.type">
-          <span class="line" />
+          <svg width="20" height="10" class="link-preview">
+            <line
+              x1="0" y1="5" x2="20" y2="5"
+              :stroke="item.color"
+              stroke-width="2"
+              :stroke-dasharray="item.dash"
+            />
+          </svg>
           {{ item.label }}
         </li>
       </ul>
@@ -82,11 +89,8 @@ li {
   flex-shrink: 0;
 }
 
-.line {
-  width: 18px;
-  height: 2px;
-  background: #3a3a6a;
+.link-preview {
   flex-shrink: 0;
-  border-radius: 1px;
+  overflow: visible;
 }
 </style>
