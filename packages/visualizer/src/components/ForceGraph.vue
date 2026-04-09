@@ -28,6 +28,13 @@ let linkEl:  d3.Selection<SVGLineElement,   SimLink,  SVGGElement, unknown> | nu
 let labelEl: d3.Selection<SVGTextElement,   SimNode,  SVGGElement, unknown> | null = null
 let simLinks: SimLink[] = []
 let zoomTransform = d3.zoomIdentity
+let svgSelection: d3.Selection<SVGSVGElement, unknown, null, undefined> | null = null
+let zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null
+
+function resetZoom() {
+  if (!svgSelection || !zoomBehavior) return
+  svgSelection.transition().duration(400).call(zoomBehavior.transform, d3.zoomIdentity)
+}
 
 onMounted(() => {
   if (!svgRef.value) return
@@ -39,10 +46,12 @@ onMounted(() => {
   simLinks = props.data.links.map(l => ({ ...l, type: l.type }))
 
   const svg = d3.select(svgRef.value)
+  svgSelection = svg
 
   // zoom/pan
   let isPanning = false
   const zoom = d3.zoom<SVGSVGElement, unknown>()
+  zoomBehavior = zoom
     .scaleExtent([0.1, 8])
     .on('start', () => { isPanning = false })
     .on('zoom', (event) => {
@@ -198,6 +207,7 @@ function drag(sim: d3.Simulation<SimNode, SimLink>) {
       :y="mousePos.y"
     />
     <Legend />
+    <button class="reset-btn" title="Reset zoom" @click="resetZoom">⌖</button>
   </div>
 </template>
 
@@ -217,5 +227,28 @@ function drag(sim: d3.Simulation<SimNode, SimLink>) {
 
 .force-graph:active {
   cursor: grabbing;
+}
+
+.reset-btn {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  background: #12122a;
+  border: 1px solid #2a2a5a;
+  border-radius: 6px;
+  color: #aaaacc;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.reset-btn:hover {
+  background: #1e1e40;
+  color: #e0e0ff;
 }
 </style>
