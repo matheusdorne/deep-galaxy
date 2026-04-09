@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    { "id": "App.vue", "type": "component", "mass": 150, "group": "root" },
+    { "id": "UserStore", "type": "store", "mass": 80, "group": "root" },
+    { "id": "LoginView.vue", "type": "component", "mass": 60, "group": "views" },
+    { "id": "fetchUserData()", "type": "method", "parent": "App.vue" },
+    { "id": "api/getUser.php", "type": "endpoint", "mass": 30, "group": "backend" }
+  ],
+  "links": [
+    { "source": "App.vue", "target": "UserStore", "type": "state_consumption" },
+    { "source": "App.vue", "target": "LoginView.vue", "type": "static_import" },
+    { "source": "fetchUserData()", "target": "api/getUser.php", "type": "wormhole" }
+  ]
+}
