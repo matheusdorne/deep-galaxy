@@ -7,7 +7,7 @@ import type { Constellation, ConstellationNode } from '../types/constellation'
 const props = defineProps<{ data: Constellation }>()
 
 const svgRef = ref<SVGSVGElement | null>(null)
-const hoveredNode   = ref<ConstellationNode | null>(null)
+const hoveredNode    = ref<ConstellationNode | null>(null)
 const selectedNodeId = ref<string | null>(null)
 const mousePos = ref({ x: 0, y: 0 })
 
@@ -22,10 +22,11 @@ const NODE_COLORS: Record<string, string> = {
 }
 
 let simulation: d3.Simulation<SimNode, SimLink> | null = null
-let nodeEl: d3.Selection<SVGCircleElement, SimNode, SVGGElement, unknown> | null = null
-let linkEl: d3.Selection<SVGLineElement,   SimLink,  SVGGElement, unknown> | null = null
-let labelEl: d3.Selection<SVGTextElement,  SimNode,  SVGGElement, unknown> | null = null
+let nodeEl:  d3.Selection<SVGCircleElement, SimNode, SVGGElement, unknown> | null = null
+let linkEl:  d3.Selection<SVGLineElement,   SimLink,  SVGGElement, unknown> | null = null
+let labelEl: d3.Selection<SVGTextElement,   SimNode,  SVGGElement, unknown> | null = null
 let simLinks: SimLink[] = []
+let zoomTransform = d3.zoomIdentity
 
 onMounted(() => {
   if (!svgRef.value) return
@@ -38,8 +39,27 @@ onMounted(() => {
 
   const svg = d3.select(svgRef.value)
 
-  // deselect on background click
-  svg.on('click', () => { selectedNodeId.value = null })
+  // zoom/pan
+  let isPanning = false
+  const zoom = d3.zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.1, 8])
+    .on('start', () => { isPanning = false })
+    .on('zoom', (event) => {
+      isPanning = true
+      zoomTransform = event.transform
+      zoomContainer.attr('transform', event.transform.toString())
+    })
+
+  svg.call(zoom).on('dblclick.zoom', null)
+
+  // deselect on background click (not after a pan)
+  svg.on('click', () => {
+    if (!isPanning) selectedNodeId.value = null
+    isPanning = false
+  })
+
+  // all graph elements live in this group so zoom applies to them
+  const zoomContainer = svg.append('g').attr('class', 'zoom-container')
 
   simulation = d3.forceSimulation<SimNode, SimLink>(nodes)
     .force('link',    d3.forceLink<SimNode, SimLink>(simLinks).id(d => d.id).distance(120))
@@ -47,7 +67,7 @@ onMounted(() => {
     .force('center',  d3.forceCenter(width / 2, height / 2))
     .force('collide', d3.forceCollide<SimNode>(d => nodeRadius(d) + 4))
 
-  linkEl = svg.append('g')
+  linkEl = zoomContainer.append('g')
     .attr('class', 'links')
     .selectAll<SVGLineElement, SimLink>('line')
     .data(simLinks)
@@ -55,7 +75,7 @@ onMounted(() => {
     .attr('stroke', '#2a2a4a')
     .attr('stroke-width', 1.5)
 
-  nodeEl = svg.append('g')
+  nodeEl = zoomContainer.append('g')
     .attr('class', 'nodes')
     .selectAll<SVGCircleElement, SimNode>('circle')
     .data(nodes)
@@ -76,10 +96,11 @@ onMounted(() => {
     .on('mouseout', () => { hoveredNode.value = null })
     .on('click', (event: MouseEvent, d) => {
       event.stopPropagation()
+      isPanning = false
       selectedNodeId.value = selectedNodeId.value === d.id ? null : d.id
     })
 
-  labelEl = svg.append('g')
+  labelEl = zoomContainer.append('g')
     .attr('class', 'labels')
     .selectAll<SVGTextElement, SimNode>('text')
     .data(nodes)
@@ -149,12 +170,14 @@ function drag(sim: d3.Simulation<SimNode, SimLink>) {
   return d3.drag<SVGCircleElement, SimNode>()
     .on('start', (event) => {
       if (!event.active) sim.alphaTarget(0.3).restart()
-      event.subject.fx = event.subject.x
-      event.subject.fy = event.subject.y
+      const [fx, fy] = zoomTransform.invert([event.x, event.y])
+      event.subject.fx = fx
+      event.subject.fy = fy
     })
     .on('drag', (event) => {
-      event.subject.fx = event.x
-      event.subject.fy = event.y
+      const [fx, fy] = zoomTransform.invert([event.x, event.y])
+      event.subject.fx = fx
+      event.subject.fy = fy
     })
     .on('end', (event) => {
       if (!event.active) sim.alphaTarget(0)
@@ -187,5 +210,10 @@ function drag(sim: d3.Simulation<SimNode, SimLink>) {
   width: 100%;
   height: 100%;
   display: block;
+  cursor: grab;
+}
+
+.force-graph:active {
+  cursor: grabbing;
 }
 </style>
