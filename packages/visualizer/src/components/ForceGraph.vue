@@ -56,7 +56,10 @@ onMounted(() => {
   const height = svgRef.value.clientHeight
 
   const nodes: SimNode[] = props.data.nodes.map(n => ({ ...n }))
-  simLinks = props.data.links.map(l => ({ ...l, type: l.type }))
+  const nodeIds = new Set(nodes.map(n => n.id))
+  simLinks = props.data.links
+    .filter(l => nodeIds.has(l.source) && nodeIds.has(l.target))
+    .map(l => ({ ...l, type: l.type }))
 
   const svg = d3.select(svgRef.value)
   svgSelection = svg

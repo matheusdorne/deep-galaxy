@@ -6,7 +6,8 @@
     "packages/*"
   ],
   "scripts": {
-    "scan": "npm run build --workspace=packages/scanner",
+    "build:scanner": "npm run build --workspace=packages/scanner",
+    "scan": "node packages/scanner/dist/index.js",
     "dev": "npm run dev --workspace=packages/visualizer"
   }
 }
