@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import ForceGraph from './components/ForceGraph.vue'
+import { useConstellation } from './composables/useConstellation'
+
+const constellation = useConstellation()
 </script>
 
 <template>
-  <main>
-    <h1>Deep Galaxy</h1>
+  <main class="app">
+    <ForceGraph :data="constellation" />
   </main>
 </template>
 
@@ -18,5 +22,10 @@ body {
   background: #0a0a0f;
   color: #e0e0ff;
   font-family: monospace;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
 }
 </style>
