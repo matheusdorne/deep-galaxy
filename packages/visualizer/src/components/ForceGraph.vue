@@ -3,6 +3,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import * as d3 from 'd3'
 import Tooltip from './Tooltip.vue'
 import Legend from './Legend.vue'
+import NodePanel from './NodePanel.vue'
 import type { Constellation, ConstellationNode } from '../types/constellation'
 
 const props = defineProps<{ data: Constellation }>()
@@ -221,6 +222,11 @@ function drag(sim: d3.Simulation<SimNode, SimLink>) {
     />
     <Legend />
     <button class="reset-btn" title="Reset zoom" @click="resetZoom">⌖</button>
+    <NodePanel
+      :selected-id="selectedNodeId"
+      :data="props.data"
+      @close="selectedNodeId = null"
+    />
   </div>
 </template>
 
