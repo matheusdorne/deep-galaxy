@@ -2,6 +2,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import * as d3 from 'd3'
 import Tooltip from './Tooltip.vue'
+import Legend from './Legend.vue'
 import type { Constellation, ConstellationNode } from '../types/constellation'
 
 const props = defineProps<{ data: Constellation }>()
@@ -196,6 +197,7 @@ function drag(sim: d3.Simulation<SimNode, SimLink>) {
       :x="mousePos.x"
       :y="mousePos.y"
     />
+    <Legend />
   </div>
 </template>
 
